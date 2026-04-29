@@ -70,16 +70,15 @@ const Register = () => {
     if (!agree) { toast.error(t("auth.agreeRequired")); return; }
 
     setLoading(true);
-    // Normalize email exactly the same way as Login. Mismatched casing or a
-    // stray space here is the #1 reason people later get "Invalid login
-    // credentials" — they registered as "Foo@x.com " but try to log in as
-    // "foo@x.com".
+    // Normalize email so capitalization or a stray space doesn't cause a
+    // mismatch between sign-up and the immediate sign-in below.
     const email = form.email.trim().toLowerCase();
+    const password = form.password;
+
     const { data, error } = await supabase.auth.signUp({
       email,
-      password: form.password,
+      password,
       options: {
-        emailRedirectTo: `${window.location.origin}/pin-setup`,
         data: {
           full_name: form.fullName,
           username: form.username,
@@ -87,30 +86,46 @@ const Register = () => {
         },
       },
     });
-    setLoading(false);
 
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      setLoading(false);
+      toast.error(error.message);
+      return;
+    }
 
-    // When email confirmation is enabled in Supabase (the default), signUp
-    // succeeds but returns no session. If we navigate to a protected route
-    // here the user is silently bounced and thinks "register worked" — then
-    // login fails with "Invalid login credentials" because their email is
-    // unconfirmed. Surface the real state instead.
+    // Detect "email already registered" before trying to sign in (Supabase
+    // returns an empty identities array in that case to avoid leaking
+    // account existence).
     const identities = data.user?.identities ?? [];
     if (data.user && identities.length === 0) {
-      // Supabase returns an empty identities array when the email is already
-      // registered, to avoid leaking account existence. Tell the user.
+      setLoading(false);
       toast.error("This email is already registered. Please sign in instead.");
       nav("/login");
       return;
     }
 
-    if (!data.session) {
-      toast.success("Account created. Please check your email to confirm your address before signing in.");
-      nav("/login");
-      return;
+    // Skip email verification: if signUp didn't already return a session,
+    // immediately sign the user in with the same credentials.
+    let session = data.session;
+    if (!session) {
+      const { data: signInData, error: signInError } =
+        await supabase.auth.signInWithPassword({ email, password });
+      if (signInError || !signInData.session) {
+        setLoading(false);
+        const msg = signInError?.message ?? "";
+        if (/email.*not.*confirmed/i.test(msg)) {
+          toast.error(
+            "Email confirmation is still enabled in Supabase. Disable it in Authentication → Providers → Email to allow automatic registration.",
+          );
+        } else {
+          toast.error(msg || "Could not sign you in after registration.");
+        }
+        return;
+      }
+      session = signInData.session;
     }
 
+    setLoading(false);
     toast.success(t("auth.createdToast"));
     nav("/pin-setup");
   };
