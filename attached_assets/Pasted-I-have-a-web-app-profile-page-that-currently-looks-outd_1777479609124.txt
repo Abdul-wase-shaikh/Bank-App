@@ -1,0 +1,56 @@
+I have a web app profile page that currently looks outdated and lacks modern UX/UI structure. I want to redesign and improve it to match a clean, modern banking/dashboard-style interface.
+
+Current Issues:
+
+The profile layout is too basic and visually unappealing
+Poor spacing, alignment, and hierarchy
+No clear separation between sections (profile info, settings, security)
+The dropdown settings menu feels disconnected and not intuitive
+
+Goals:
+Redesign the profile section into a modern, professional UI similar to fintech apps (clean, minimal, responsive, and well-structured).
+
+Required Improvements:
+
+Modern UI Redesign
+Use card-based layout with proper spacing and shadows
+Add profile avatar with edit/upload option
+Improve typography (clear headings, labels, input fields)
+Add icons for better visual guidance
+Ensure responsive design (mobile + desktop)
+Better Layout Structure
+Divide profile into sections:
+Personal Information (name, email, phone)
+Account Settings
+Security Settings
+Use tabs or sidebar navigation instead of a simple form
+Security Section (NEW - IMPORTANT)
+Add a dedicated security section inside profile:
+Change password
+Enable/Disable 2FA (Two-Factor Authentication)
+Login activity / device history
+Logout from all devices
+Email/phone verification status
+Interactive UX Enhancements
+Inline validation for inputs
+Success/error notifications (toasts/snackbars)
+Loading states on save actions
+Toggle switches for settings
+Dropdown Menu Improvement
+Make the profile dropdown cleaner and modern
+Add icons and better spacing
+Smooth animations
+Highlight active section
+Code Requirements
+Refactor existing code for maintainability
+Use reusable components
+Follow modern frontend practices (React/Vue/HTML-CSS depending on project)
+
+Expected Output:
+
+Updated UI design (modern look)
+Clean, structured code
+Fully functional profile + security section
+Explanation of improvements made
+
+Optional: Follow design inspiration similar to modern fintech apps like Stripe, Revolut, or PayPal dashboards.

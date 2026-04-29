@@ -37,51 +37,75 @@ export const CIRCLES = [
   "Punjab",
 ];
 
-// 4-digit prefix → operator. Order is irrelevant; longest match wins.
-const PREFIX_4: Record<string, OperatorName> = {
+// 4-digit prefix → operator. Mobile-number portability means these are
+// best-guesses based on original allocations; each prefix gets exactly one
+// owner here so detection is deterministic.
+const PREFIX_4_TABLE: ReadonlyArray<[string, OperatorName]> = [
   // ---- Jio ----
-  "6000": "Jio", "6001": "Jio", "7000": "Jio", "7001": "Jio", "7002": "Jio",
-  "7003": "Jio", "7004": "Jio", "7005": "Jio", "7006": "Jio", "7007": "Jio",
-  "7008": "Jio", "7009": "Jio", "7010": "Jio", "7011": "Jio", "7012": "Jio",
-  "7400": "Jio", "7401": "Jio", "7405": "Jio", "7406": "Jio", "7410": "Jio",
-  "8200": "Jio", "8201": "Jio", "8205": "Jio", "8210": "Jio", "8800": "Jio",
-  "8888": "Jio", "8900": "Jio", "8905": "Jio", "8910": "Jio", "9000": "Jio",
-  "9001": "Jio", "9090": "Jio", "9099": "Jio",
-
+  ["6000", "Jio"], ["6001", "Jio"], ["7000", "Jio"], ["7001", "Jio"],
+  ["7002", "Jio"], ["7003", "Jio"], ["7004", "Jio"], ["7005", "Jio"],
+  ["7006", "Jio"], ["7007", "Jio"], ["7008", "Jio"], ["7009", "Jio"],
+  ["7010", "Jio"], ["7012", "Jio"], ["7400", "Jio"], ["7401", "Jio"],
+  ["7405", "Jio"], ["7406", "Jio"], ["7410", "Jio"], ["8200", "Jio"],
+  ["8201", "Jio"], ["8205", "Jio"], ["8210", "Jio"], ["8888", "Jio"],
+  ["8900", "Jio"], ["8905", "Jio"], ["8910", "Jio"], ["9000", "Jio"],
+  ["9001", "Jio"], ["9090", "Jio"], ["9099", "Jio"],
   // ---- Airtel ----
-  "7011": "Airtel", "7011": "Airtel", "7042": "Airtel", "7065": "Airtel",
-  "7290": "Airtel", "7291": "Airtel", "7503": "Airtel", "7838": "Airtel",
-  "8800": "Airtel", "8826": "Airtel", "8860": "Airtel", "8882": "Airtel",
-  "9711": "Airtel", "9810": "Airtel", "9811": "Airtel", "9871": "Airtel",
-  "9899": "Airtel", "9900": "Airtel", "9901": "Airtel", "9902": "Airtel",
-  "9971": "Airtel", "9999": "Airtel",
-
+  ["7011", "Airtel"], ["7042", "Airtel"], ["7065", "Airtel"],
+  ["7290", "Airtel"], ["7291", "Airtel"], ["7503", "Airtel"],
+  ["7838", "Airtel"], ["8800", "Airtel"], ["8826", "Airtel"],
+  ["8860", "Airtel"], ["8882", "Airtel"], ["9711", "Airtel"],
+  ["9810", "Airtel"], ["9811", "Airtel"], ["9871", "Airtel"],
+  ["9899", "Airtel"], ["9900", "Airtel"], ["9901", "Airtel"],
+  ["9902", "Airtel"], ["9971", "Airtel"], ["9999", "Airtel"],
   // ---- Vi (Vodafone Idea) ----
-  "7042": "Vi", "7838": "Vi", "8800": "Vi", "8810": "Vi", "8826": "Vi",
-  "9560": "Vi", "9650": "Vi", "9711": "Vi", "9810": "Vi", "9818": "Vi",
-  "9821": "Vi", "9833": "Vi", "9869": "Vi", "9892": "Vi",
-
+  ["8810", "Vi"], ["9560", "Vi"], ["9650", "Vi"], ["9818", "Vi"],
+  ["9821", "Vi"], ["9833", "Vi"], ["9869", "Vi"], ["9892", "Vi"],
   // ---- BSNL ----
-  "9434": "BSNL", "9435": "BSNL", "9436": "BSNL", "9437": "BSNL",
-  "9438": "BSNL", "9439": "BSNL", "9440": "BSNL", "9441": "BSNL",
-  "9442": "BSNL", "9443": "BSNL", "9444": "BSNL", "9445": "BSNL",
-  "9446": "BSNL", "9447": "BSNL", "9448": "BSNL", "9449": "BSNL",
-  "9450": "BSNL", "9451": "BSNL", "9452": "BSNL", "9453": "BSNL",
-  "9454": "BSNL", "9455": "BSNL", "9456": "BSNL", "9457": "BSNL",
-  "9458": "BSNL", "9459": "BSNL", "9460": "BSNL", "9461": "BSNL",
-  "9462": "BSNL", "9463": "BSNL", "9464": "BSNL", "9465": "BSNL",
-  "9466": "BSNL", "9467": "BSNL", "9468": "BSNL", "9469": "BSNL",
-  "9470": "BSNL", "9471": "BSNL", "9472": "BSNL", "9473": "BSNL",
-};
+  ["9434", "BSNL"], ["9435", "BSNL"], ["9436", "BSNL"], ["9437", "BSNL"],
+  ["9438", "BSNL"], ["9439", "BSNL"], ["9440", "BSNL"], ["9441", "BSNL"],
+  ["9442", "BSNL"], ["9443", "BSNL"], ["9444", "BSNL"], ["9445", "BSNL"],
+  ["9446", "BSNL"], ["9447", "BSNL"], ["9448", "BSNL"], ["9449", "BSNL"],
+  ["9450", "BSNL"], ["9451", "BSNL"], ["9452", "BSNL"], ["9453", "BSNL"],
+  ["9454", "BSNL"], ["9455", "BSNL"], ["9456", "BSNL"], ["9457", "BSNL"],
+  ["9458", "BSNL"], ["9459", "BSNL"], ["9460", "BSNL"], ["9461", "BSNL"],
+  ["9462", "BSNL"], ["9463", "BSNL"], ["9464", "BSNL"], ["9465", "BSNL"],
+  ["9466", "BSNL"], ["9467", "BSNL"], ["9468", "BSNL"], ["9469", "BSNL"],
+  ["9470", "BSNL"], ["9471", "BSNL"], ["9472", "BSNL"], ["9473", "BSNL"],
+];
 
-// 2-digit fallback for partial input. These are coarse and follow the
-// historical leading-digit allocations.
-const PREFIX_2: Record<string, OperatorName> = {
-  "60": "Jio",   "70": "Jio",   "74": "Jio",   "82": "Jio",   "89": "Jio",   "90": "Jio",
-  "70": "Airtel", "78": "Airtel", "80": "Airtel", "88": "Airtel", "98": "Airtel", "99": "Airtel",
-  "75": "Vi",    "85": "Vi",    "86": "Vi",    "95": "Vi",    "96": "Vi",
-  "94": "BSNL",  "84": "BSNL",  "73": "BSNL",
-};
+const PREFIX_4 = new Map<string, OperatorName>(PREFIX_4_TABLE);
+
+// 2-digit fallback for partial input. Each leading pair maps to a single
+// best-guess operator (one key per pair — no duplicates).
+const PREFIX_2_TABLE: ReadonlyArray<[string, OperatorName]> = [
+  ["60", "Jio"],
+  ["70", "Jio"],
+  ["73", "BSNL"],
+  ["74", "Jio"],
+  ["75", "Vi"],
+  ["77", "Airtel"],
+  ["78", "Airtel"],
+  ["80", "Airtel"],
+  ["82", "Jio"],
+  ["83", "Airtel"],
+  ["84", "BSNL"],
+  ["85", "Vi"],
+  ["86", "Vi"],
+  ["87", "Airtel"],
+  ["88", "Airtel"],
+  ["89", "Jio"],
+  ["90", "Jio"],
+  ["91", "Airtel"],
+  ["94", "BSNL"],
+  ["95", "Vi"],
+  ["96", "Vi"],
+  ["97", "Airtel"],
+  ["98", "Airtel"],
+  ["99", "Airtel"],
+];
+
+const PREFIX_2 = new Map<string, OperatorName>(PREFIX_2_TABLE);
 
 function deterministicCircle(phone: string): string {
   let h = 0;
@@ -118,10 +142,10 @@ export const getOperatorMock = (phone: string): DetectedOperator | null => {
   let op: OperatorName | undefined;
 
   if (digits.length >= 4) {
-    op = PREFIX_4[digits.slice(0, 4)];
+    op = PREFIX_4.get(digits.slice(0, 4));
   }
   if (!op) {
-    op = PREFIX_2[digits.slice(0, 2)];
+    op = PREFIX_2.get(digits.slice(0, 2));
   }
   if (!op) return null;
 
