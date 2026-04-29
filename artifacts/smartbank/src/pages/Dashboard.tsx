@@ -42,12 +42,42 @@ const Dashboard = () => {
     setLoading(true);
     const since = new Date(); since.setHours(0,0,0,0); since.setDate(since.getDate() - 6);
     const dayKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-    const [{ data: a }, { data: p }, { data: tx }, { data: t7 }] = await Promise.all([
+    const [{ data: aInit }, { data: pInit }, { data: tx }, { data: t7 }] = await Promise.all([
       supabase.from("accounts").select("*").eq("user_id", user.id).maybeSingle(),
       supabase.from("profiles").select("full_name,phone").eq("id", user.id).maybeSingle(),
       supabase.from("transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
       supabase.from("transactions").select("type,amount,created_at").eq("user_id", user.id).gte("created_at", since.toISOString()),
     ]);
+
+    // First sign-in: provision a unique account + profile so the digital
+    // card and account number aren't identical across users.
+    let a = aInit;
+    if (!a) {
+      const seed = user.id.replace(/[^a-f0-9]/gi, "");
+      const digits = (BigInt("0x" + (seed.slice(0, 12) || "1")) % 1_000_000_000_000n)
+        .toString()
+        .padStart(12, "0");
+      const accountNumber = `5${digits.slice(1)}`;
+      const { data: created } = await supabase
+        .from("accounts")
+        .insert({
+          user_id: user.id,
+          account_number: accountNumber,
+          balance: 0,
+          currency: "INR",
+        });
+      a = (Array.isArray(created) ? created[0] : created) as any;
+    }
+
+    let p = pInit;
+    if (!p) {
+      const guessedName = user.email?.split("@")[0] ?? "Card Holder";
+      const { data: createdP } = await supabase
+        .from("profiles")
+        .insert({ id: user.id, full_name: guessedName, phone: null });
+      p = (Array.isArray(createdP) ? createdP[0] : createdP) as any;
+    }
+
     setAccount(a as any);
     setProfile(p as any);
     setTxs((tx as any) ?? []);
