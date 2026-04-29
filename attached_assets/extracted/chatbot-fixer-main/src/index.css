@@ -1,0 +1,168 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  @keyframes card-hue {
+    0%   { filter: hue-rotate(0deg) saturate(1.1); }
+    100% { filter: hue-rotate(360deg) saturate(1.1); }
+  }
+  @keyframes card-spin {
+    from { transform: rotateY(0deg); }
+    to   { transform: rotateY(360deg); }
+  }
+  .card-3d-wrap { perspective: 1200px; }
+  .card-spin { animation: card-spin 12s linear infinite; transform-style: preserve-3d; will-change: transform; }
+  .card-hue  { animation: card-hue 8s linear infinite; }
+  .card-spin:hover { animation-play-state: paused; }
+}
+
+@layer base {
+  :root {
+    /* Smart Bank — Light */
+    --background: 210 40% 98%;
+    --foreground: 230 35% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 230 35% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 35% 10%;
+
+    --primary: 175 84% 38%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 220 25% 94%;
+    --secondary-foreground: 230 35% 12%;
+
+    --muted: 220 20% 94%;
+    --muted-foreground: 230 15% 40%;
+
+    --accent: 270 85% 55%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 20% 88%;
+    --input: 220 20% 90%;
+    --ring: 175 84% 38%;
+
+    --radius: 0.9rem;
+
+    --gradient-primary: linear-gradient(135deg, hsl(175 84% 38%), hsl(195 85% 50%));
+    --gradient-accent: linear-gradient(135deg, hsl(270 85% 55%), hsl(195 85% 50%));
+    --gradient-hero: radial-gradient(ellipse at top, hsl(195 80% 80% / 0.55), transparent 60%),
+                     radial-gradient(ellipse at bottom right, hsl(270 80% 85% / 0.45), transparent 60%),
+                     hsl(210 40% 98%);
+    --gradient-card: linear-gradient(140deg, hsl(0 0% 100% / 0.9), hsl(220 25% 96% / 0.9));
+
+    --shadow-glow: 0 0 40px hsl(175 84% 45% / 0.30);
+    --shadow-elegant: 0 20px 60px -20px hsl(175 84% 38% / 0.25);
+    --shadow-card: 0 10px 40px -10px hsl(220 30% 40% / 0.20);
+
+    --sidebar-background: 210 40% 98%;
+    --sidebar-foreground: 230 35% 10%;
+    --sidebar-primary: 175 84% 38%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 220 25% 94%;
+    --sidebar-accent-foreground: 230 35% 12%;
+    --sidebar-border: 220 20% 88%;
+    --sidebar-ring: 175 84% 38%;
+
+    color-scheme: light;
+  }
+
+  .dark {
+    /* Smart Bank — Dark Fintech */
+    --background: 230 35% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 232 30% 9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 232 30% 10%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 168 92% 55%;
+    --primary-foreground: 230 40% 8%;
+
+    --secondary: 232 25% 14%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 232 20% 14%;
+    --muted-foreground: 220 14% 65%;
+
+    --accent: 270 95% 70%;
+    --accent-foreground: 230 40% 8%;
+
+    --destructive: 0 84% 62%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 232 25% 18%;
+    --input: 232 25% 16%;
+    --ring: 168 92% 55%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(168 92% 55%), hsl(195 95% 60%));
+    --gradient-accent: linear-gradient(135deg, hsl(270 95% 70%), hsl(195 95% 60%));
+    --gradient-hero: radial-gradient(ellipse at top, hsl(195 80% 25% / 0.45), transparent 60%),
+                     radial-gradient(ellipse at bottom right, hsl(270 80% 30% / 0.35), transparent 60%),
+                     hsl(230 35% 6%);
+    --gradient-card: linear-gradient(140deg, hsl(232 30% 11% / 0.9), hsl(232 30% 8% / 0.9));
+
+    --shadow-glow: 0 0 40px hsl(168 92% 55% / 0.35);
+    --shadow-elegant: 0 20px 60px -20px hsl(168 92% 55% / 0.25);
+    --shadow-card: 0 10px 40px -10px hsl(230 60% 2% / 0.6);
+
+    --sidebar-background: 230 35% 6%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 168 92% 55%;
+    --sidebar-primary-foreground: 230 40% 8%;
+    --sidebar-accent: 232 25% 14%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 232 25% 18%;
+    --sidebar-ring: 168 92% 55%;
+
+    color-scheme: dark;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  html { scroll-behavior: smooth; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+    background: var(--gradient-hero);
+    background-attachment: fixed;
+  }
+  h1, h2, h3, h4 { @apply font-semibold tracking-tight; }
+}
+
+@layer components {
+  .glass-card {
+    background: var(--gradient-card);
+    @apply backdrop-blur-xl border border-border/60 rounded-2xl;
+    box-shadow: var(--shadow-card);
+  }
+  .glow-primary { box-shadow: var(--shadow-glow); }
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-gradient-accent {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .grid-bg {
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.4) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.4) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  }
+}
