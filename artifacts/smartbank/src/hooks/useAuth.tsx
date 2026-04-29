@@ -21,19 +21,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Hard-coded super-admins. Any user logging in with one of these emails
+    // is granted admin access in the UI without needing a row in the
+    // user_roles table. Server-side actions that depend on RLS still need a
+    // matching role on Supabase.
+    const SUPER_ADMIN_EMAILS = new Set<string>([
+      "saniyakhan14u@gmail.com",
+    ]);
+
+    const resolveAdmin = async (sessUser: User) => {
+      if (sessUser.email && SUPER_ADMIN_EMAILS.has(sessUser.email.toLowerCase())) {
+        setIsAdmin(true);
+        return;
+      }
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", sessUser.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      setIsAdmin(!!data);
+    };
+
     const { data: sub } = supabase.auth.onAuthStateChange((_evt, sess) => {
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
-        setTimeout(async () => {
-          const { data } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", sess.user.id)
-            .eq("role", "admin")
-            .maybeSingle();
-          setIsAdmin(!!data);
-        }, 0);
+        setTimeout(() => { void resolveAdmin(sess.user); }, 0);
       } else {
         setIsAdmin(false);
       }
@@ -42,6 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
       setUser(s?.user ?? null);
+      if (s?.user) void resolveAdmin(s.user);
       setLoading(false);
     });
 
