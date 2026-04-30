@@ -12,6 +12,7 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { DigitalCard } from "@/components/DigitalCard";
 import { TxnPinConfirmDialog } from "@/components/TxnPinConfirmDialog";
 import { SuccessDialog } from "@/components/SuccessDialog";
+import { processBanking } from "@/lib/localBanking";
 
 type Account = { id: string; account_number: string; balance: number; currency: string; created_at?: string };
 type Tx = { id: string; type: string; amount: number; description: string | null; created_at: string; from_account: string | null; to_account: string | null };
@@ -133,18 +134,16 @@ const Dashboard = () => {
     if (!action || !amount) return;
     const amt = parseFloat(amount);
     setSubmitting(true);
-    const { data, error } = await supabase.functions.invoke("banking", {
-      body: {
-        action,
-        amount: amt,
-        to_account: toAcct || null,
-        description: desc || null,
-        txn_pin: proof?.txnPin,
-        biometric_credential_id: proof?.biometricCredentialId,
-      },
+    const { data, error } = await processBanking({
+      action,
+      amount: amt,
+      to_account: toAcct || null,
+      description: desc || null,
+      txn_pin: proof?.txnPin,
+      biometric_credential_id: proof?.biometricCredentialId,
     });
     setSubmitting(false);
-    if (error || (data as any)?.error) { toast.error((data as any)?.error || error?.message || t("dashboard.txFailed")); return; }
+    if (error || !data) { toast.error(error?.message || t("dashboard.txFailed")); return; }
     const labelMap: Record<string, string> = {
       deposit: "Deposit successful!",
       withdraw: "Withdrawal successful!",

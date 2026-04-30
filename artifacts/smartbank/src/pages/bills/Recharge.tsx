@@ -17,6 +17,7 @@ import { SuccessScreen } from "@/components/bills/SuccessScreen";
 import { TxnPinConfirmDialog } from "@/components/TxnPinConfirmDialog";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { processBanking } from "@/lib/localBanking";
 
 export default function Recharge() {
   useGsapPage();
@@ -88,18 +89,16 @@ export default function Recharge() {
     if (!user || !selectedPlan) return;
     setWorking(true);
 
-    const { data, error } = await supabase.functions.invoke("banking", {
-      body: {
-        action: "withdraw",
-        amount: selectedPlan.price,
-        description: `Recharge: ${phone}`,
-        txn_pin: proof.txnPin,
-        biometric_credential_id: proof.biometricCredentialId,
-      },
+    const { data, error } = await processBanking({
+      action: "withdraw",
+      amount: selectedPlan.price,
+      description: `Recharge: ${phone}`,
+      txn_pin: proof.txnPin,
+      biometric_credential_id: proof.biometricCredentialId,
     });
 
-    if (error || (data && (data as any).error)) {
-      toast.error((data as any)?.error || error?.message || "Payment failed");
+    if (error || !data) {
+      toast.error(error?.message || "Payment failed");
       setWorking(false);
       return;
     }

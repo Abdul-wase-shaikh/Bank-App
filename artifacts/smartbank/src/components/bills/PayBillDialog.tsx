@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Loader2, Receipt } from "lucide-react";
+import { processBanking } from "@/lib/localBanking";
 import { CATEGORY_MAP, type BillCategoryKey } from "@/lib/bills";
 
 export interface PayBillBiller {
@@ -53,21 +54,18 @@ export const PayBillDialog = ({ open, onOpenChange, biller, onPaid }: Props) => 
     }
     setWorking(true);
 
-    // 1) Move money via banking edge function (withdraw with txn PIN)
+    // 1) Move money via local banking handler (withdraw with txn PIN)
     const desc = `Bill: ${biller.name}${period ? ` (${period})` : ""}`;
-    const { data, error } = await supabase.functions.invoke("banking", {
-      body: {
-        action: "withdraw",
-        amount: amt,
-        description: desc,
-        txn_pin: proof.txnPin,
-        biometric_credential_id: proof.biometricCredentialId,
-      },
+    const { data, error } = await processBanking({
+      action: "withdraw",
+      amount: amt,
+      description: desc,
+      txn_pin: proof.txnPin,
+      biometric_credential_id: proof.biometricCredentialId,
     });
 
-    if (error || (data && (data as any).error)) {
-      const msg = (data as any)?.error || error?.message || "Payment failed";
-      toast.error(msg);
+    if (error || !data) {
+      toast.error(error?.message || "Payment failed");
       setWorking(false);
       return;
     }

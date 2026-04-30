@@ -14,6 +14,7 @@ import { SuccessScreen } from "@/components/bills/SuccessScreen";
 import { TxnPinConfirmDialog } from "@/components/TxnPinConfirmDialog";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/format";
+import { processBanking } from "@/lib/localBanking";
 
 export default function PayBill() {
   useGsapPage();
@@ -79,18 +80,16 @@ export default function PayBill() {
     if (!user || !billData) return;
     setWorking(true);
 
-    const { data, error } = await supabase.functions.invoke("banking", {
-      body: {
-        action: "withdraw",
-        amount: billData.amount,
-        description: `${meta.label} Bill: ${selectedProvider}`,
-        txn_pin: proof.txnPin,
-        biometric_credential_id: proof.biometricCredentialId,
-      },
+    const { data, error } = await processBanking({
+      action: "withdraw",
+      amount: billData.amount,
+      description: `${meta.label} Bill: ${selectedProvider}`,
+      txn_pin: proof.txnPin,
+      biometric_credential_id: proof.biometricCredentialId,
     });
 
-    if (error || (data && (data as any).error)) {
-      toast.error((data as any)?.error || error?.message || "Payment failed");
+    if (error || !data) {
+      toast.error(error?.message || "Payment failed");
       setWorking(false);
       return;
     }
