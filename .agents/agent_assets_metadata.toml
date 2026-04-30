@@ -6,3 +6,9 @@ id = "63a_z2aMhzSi0TvBbjNz7"
 uri = "file://attached_assets/chatbot-fixer-fixed.zip"
 type = "unspecified"
 title = "chatbot-fixer-main (patched)"
+
+[[outputs]]
+id = "20SP_dUs4w1-sOpSBrwHj"
+uri = "file://exports/smartbank-project.zip"
+type = "unspecified"
+title = "SmartBank Project (source code)"
