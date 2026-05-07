@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -11,7 +17,11 @@ interface AuthCtx {
 }
 
 const Ctx = createContext<AuthCtx>({
-  user: null, session: null, isAdmin: false, loading: true, signOut: async () => {},
+  user: null,
+  session: null,
+  isAdmin: false,
+  loading: true,
+  signOut: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -25,12 +35,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // is granted admin access in the UI without needing a row in the
     // user_roles table. Server-side actions that depend on RLS still need a
     // matching role on Supabase.
-    const SUPER_ADMIN_EMAILS = new Set<string>([
-      "saniyakhan14u@gmail.com",
-    ]);
+    const SUPER_ADMIN_EMAILS = new Set<string>(["wada58539@gmail.com"]);
 
     const resolveAdmin = async (sessUser: User) => {
-      if (sessUser.email && SUPER_ADMIN_EMAILS.has(sessUser.email.toLowerCase())) {
+      if (
+        sessUser.email &&
+        SUPER_ADMIN_EMAILS.has(sessUser.email.toLowerCase())
+      ) {
         setIsAdmin(true);
         return;
       }
@@ -47,7 +58,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
-        setTimeout(() => { void resolveAdmin(sess.user); }, 0);
+        setTimeout(() => {
+          void resolveAdmin(sess.user);
+        }, 0);
       } else {
         setIsAdmin(false);
       }
@@ -68,7 +81,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
   };
 
-  return <Ctx.Provider value={{ user, session, isAdmin, loading, signOut }}>{children}</Ctx.Provider>;
+  return (
+    <Ctx.Provider value={{ user, session, isAdmin, loading, signOut }}>
+      {children}
+    </Ctx.Provider>
+  );
 };
 
 export const useAuth = () => useContext(Ctx);
