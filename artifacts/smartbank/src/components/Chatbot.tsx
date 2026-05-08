@@ -33,15 +33,23 @@ export const Chatbot = () => {
 
   const send = async () => {
     const text = input.trim();
+
     if (!text || loading) return;
-    const next: Msg[] = [...messages, { role: "user", content: text }];
-    setMessages(next);
+
+    const userMessage: Msg = {
+      role: "user",
+      content: text,
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+
     setInput("");
     setLoading(true);
 
     try {
       const langLabel =
         LANGS.find((l) => l.code === i18n.language)?.label ?? "English";
+
       const resp = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
         {
@@ -51,47 +59,35 @@ export const Chatbot = () => {
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
           },
           body: JSON.stringify({
-            messages: next,
+            messages: [...messages, userMessage],
             language: langLabel,
             languageCode: i18n.language,
           }),
         },
       );
-      if (resp.status === 429) {
-        setMessages((m) => [
-          ...m,
-          { role: "assistant", content: t("chatbot.rate") },
-        ]);
-        return;
+
+      if (!resp.ok) {
+        throw new Error("Failed to get response");
       }
-      if (resp.status === 402) {
-        setMessages((m) => [
-          ...m,
-          { role: "assistant", content: t("chatbot.credits") },
-        ]);
-        return;
-      }
-      if (!resp.ok || !resp.body) throw new Error("stream failed");
 
       const data = await resp.json();
 
-      setMessages((m) => [
-        ...m,
+      setMessages((prev) => [
+        ...prev,
         {
           role: "assistant",
-          content: data.reply,
+          content: data.reply || "Sorry, I could not generate a response.",
         },
       ]);
-          } catch {
-            buf = line + "\n" + buf;
-            break;
-          }
-        }
-      }
-    } catch {
-      setMessages((m) => [
-        ...m,
-        { role: "assistant", content: t("chatbot.error") },
+    } catch (error) {
+      console.error(error);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: t("chatbot.error"),
+        },
       ]);
     } finally {
       setLoading(false);
