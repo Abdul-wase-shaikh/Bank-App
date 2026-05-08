@@ -35,8 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // is granted admin access in the UI without needing a row in the
     // user_roles table. Server-side actions that depend on RLS still need a
     // matching role on Supabase.
-    const SUPER_ADMIN_EMAILS = new Set<string>(["wada58539@gmail.com"]);
-
+    const SUPER_ADMIN_EMAILS = new Set<string>(["admin@gmail.com"]);
     const resolveAdmin = async (sessUser: User) => {
       if (
         sessUser.email &&
