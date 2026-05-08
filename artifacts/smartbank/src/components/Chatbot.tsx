@@ -73,39 +73,15 @@ export const Chatbot = () => {
       }
       if (!resp.ok || !resp.body) throw new Error("stream failed");
 
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
-      let acc = "";
-      setMessages((m) => [...m, { role: "assistant", content: "" }]);
+      const data = await resp.json();
 
-      let done = false;
-      while (!done) {
-        const { done: d, value } = await reader.read();
-        if (d) break;
-        buf += decoder.decode(value, { stream: true });
-        let i: number;
-        while ((i = buf.indexOf("\n")) !== -1) {
-          let line = buf.slice(0, i);
-          buf = buf.slice(i + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const j = line.slice(6).trim();
-          if (j === "[DONE]") {
-            done = true;
-            break;
-          }
-          try {
-            const p = JSON.parse(j);
-            const c = p.choices?.[0]?.delta?.content;
-            if (c) {
-              acc += c;
-              setMessages((m) =>
-                m.map((mm, idx) =>
-                  idx === m.length - 1 ? { ...mm, content: acc } : mm,
-                ),
-              );
-            }
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content: data.reply,
+        },
+      ]);
           } catch {
             buf = line + "\n" + buf;
             break;
